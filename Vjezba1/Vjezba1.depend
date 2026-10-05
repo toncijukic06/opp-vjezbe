@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1791191158 source:d:\toncijukic\vjezba1\zadatak1.cpp
+	<iostream>
+
+1791191166 source:d:\toncijukic\vjezba1\zadatak2.cpp
+	<iostream>
+	<string.h>
+
