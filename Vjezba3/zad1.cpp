@@ -19,8 +19,6 @@ void input_vector(std::vector<int>& v) {
 
 	} while (unos != 0);
 
-	
-
 
 
 }
@@ -66,12 +64,5 @@ int main() {
 
 	std::cout << novi.capacity();
 	
-
-
-
-
-
-
-
 
 }
