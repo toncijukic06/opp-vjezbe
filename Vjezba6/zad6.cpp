@@ -1,123 +1,109 @@
-// Vjezba 6, zadatak 5: napisite klase Enemy i Level iznad main.
+// Vjezba 6, zadatak 6: napisite klasu RecentlyPlayed iznad main.
 
+#include <cassert>
 #include <iostream>
 #include <string>
-#include <vector>
 
-// ovdje napisite klase Enemy i Level
-
-class Enemy
+// ovdje napisite klasu RecentlyPlayed
+class RecentlyPlayed
 {
-    std::string name;
-    int x, y;
-    int health = 100;
+private:
+    std::string *niz;
+    int kapacitet;
+    int brojNaslova = 0;
+    int next = 0;
 
 public:
-    Enemy(std::string n, int x, int y) : name(n), x(x), y(y)
+    RecentlyPlayed(int n) : kapacitet(n)
     {
-    }
-    std::string get_name()
-    {
-        return name;
-    }
-    int get_x()
-    {
-        return x;
+        assert(kapacitet > 0);
+        niz = new std::string[kapacitet];
     }
 
-    int get_y()
+    RecentlyPlayed(const RecentlyPlayed &other)
+        : kapacitet(other.kapacitet), brojNaslova(other.brojNaslova), next(other.next)
     {
-        return y;
-    }
-
-    const int get_health()
-    {
-        return health;
-    }
-
-    const bool is_alive()
-    {
-        return health > 0;
-    }
-
-    void move(int dx, int dy)
-    {
-        x += dx;
-        y += dy;
-    }
-    void take_damage(int d)
-    {
-        if (health - d > 0)
+        niz = new std::string[kapacitet];
+        for (int i = 0; i < kapacitet; ++i)
         {
-            health -= d;
-        }
-        else
-        {
-            health = 0;
+            niz[i] = other.niz[i];
         }
     }
-};
 
-class Level
-{
 
-    int rows;
-    int cols;
-    std::vector<Enemy> enemies;
-
-public:
-    Level(int r, int c) : rows(r), cols(c)
+    ~RecentlyPlayed()
     {
+        delete[] niz;
     }
-    bool add(Enemy e)
+
+    void play(const std::string &title)
     {
-        if (e.get_x() >= 0 && e.get_x() < cols && e.get_y() >= 0 && e.get_y() < rows)
+        niz[next] = title;
+        next = (next + 1) % kapacitet;
+        if (brojNaslova < kapacitet)
         {
-            enemies.push_back(e);
-            return true;
+            ++brojNaslova;
         }
-        return false;
     }
-    void step(int dx, int dy)
+
+    int size() const
     {
-        for (Enemy &e : enemies)
+        return brojNaslova;
+    }
+
+    int capacity() const
+    {
+        return kapacitet;
+    }
+
+    std::string get(int i) const
+    {
+        assert(i >= 0 && i < brojNaslova);
+        int idx = (next - 1 - i + kapacitet * 2) % kapacitet;
+        return niz[idx];
+    }
+
+    void print() const
+    {
+        for (int i = 0; i < brojNaslova; ++i)
         {
-            int nx = e.get_x() + dx;
-            int ny = e.get_y() + dy;
-            if (nx >= 0 && nx < cols && ny >= 0 && ny < rows)
+            if (i > 0)
             {
-                e.move(dx, dy);
+                std::cout << ", ";
             }
+            std::cout << get(i);
         }
-    }
-    void const print()
-    {
-        for (Enemy e : enemies)
-        {
-            std::cout << e.get_name() << " (" << e.get_x() << ", " << e.get_y() << ")" << e.get_health() << "\n";
-        }
+        std::cout << '\n';
     }
 };
 
 int main()
 {
-    Level cave(5, 10);
-    cave.add(Enemy("Gnome", 1, 1));
-    std::cout << cave.add(Enemy("Troll", 8, 3))
-              << cave.add(Enemy("Bat", 12, 2)) << '\n';
-    cave.step(1, 1);
-    cave.print();
-    cave.step(1, 1);
-    cave.print();
+    RecentlyPlayed recent(3);
+    recent.play("Heroes");
+    recent.play("Literary Mind");
+    std::cout << recent.size() << ' ' << recent.capacity() << '\n';
+    recent.play("Sports");
+    recent.print();
+    recent.play("Henry Don't Got Love");     // buffer je pun: prepisuje se najstarija
+    recent.print();
+
+    RecentlyPlayed copy = recent;             // copy konstruktor
+    recent.play("Guided by Angels");
+    recent.print();
+    copy.print();
+    std::cout << copy.get(0) << '\n';
     return 0;
 }
+
 
 /*
 Ocekivani ispis:
 
-    10
-    Gnome (2, 2) 100
-    Troll (9, 4) 100
-    Gnome (3, 3) 100
-    Troll (9, 4) 100
+    2 3
+    Sports, Literary Mind, Heroes
+    Henry Don't Got Love, Sports, Literary Mind
+    Guided by Angels, Henry Don't Got Love, Sports
+    Henry Don't Got Love, Sports, Literary Mind
+    Henry Don't Got Love
 */
